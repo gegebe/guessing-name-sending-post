@@ -22,7 +22,8 @@ function updateRemainingTime() {
   remainingSeconds = remainingSeconds - 1;
 
   // 2. Actualizar el innerHTML de #remaining-time con el valor de la variable remainingSeconds
-  document.querySelector("#remaining-time").innerHTML = remainingSeconds;
+  document.querySelector("#remaining-time").innerHTML = remainingSeconds
+
 
   // 3. Cuando llegue a 0 ha perdido
   //   3.1 Bloquear el input para que no pueda escribir más. Pensad que está funcionalidad ya se da cuando te equivocas muchas veces, buscad en el código como lo hace el programador
@@ -56,7 +57,7 @@ function validateGuess(guess) {
     //Keep record of number of attempted guesses
     previousGuesses.push(guess);
     //Check to see if game is over
-    if (numGuesses === 11) {
+    if (numGuesses === 10) {
       displayGuesses(guess);
       displayMessage(`Game Over! Number was ${randomNumber}`);
       endGame();
@@ -70,16 +71,30 @@ function validateGuess(guess) {
 }
 
 // ¿En que punto del código hay que invocar a esta función?
-async function sendScoreToServer() {
+
+
+async function sendScoreToServer(elapsedTime, userAttempts) {
   // TODO: Establecer adecuadamente el valor de las propiedades elapsed_time y attempts
   const score = {
-    machine: "",
-    elapsed_time: 0,
-    attempts: 0,
+    machine: "Eugenio",
+    elapsed_time: elapsedTime,
+    attempts: userAttempts,
   };
   // TODO: CODE ME!! Haz el POST con la función fetch.
   console.log("Enviando los datos al servidor de King.com"); //POST
   // Enviamos los datos al endpoint
+
+  let response = await fetch('https://guessing-name-score-api.onrender.com/add-score', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json;charset=utf-8'
+    },
+    body: JSON.stringify(score)
+  });
+
+  let result = await response.json();
+  console.log(result.message);
+
 }
 
 function checkGuess(guess) {
@@ -89,7 +104,9 @@ function checkGuess(guess) {
       `You guessed correctly! You can check all the scores at <a href="https://03i74i.csb.app/">https://03i74i.csb.app/</a> (provided that the developer did the work!!)`
     );
 
-    sendScoreToServer();
+    let elapsedTime = +document.querySelector("#remaining-time").textContent;
+
+    sendScoreToServer(elapsedTime, numGuesses);
     endGame();
   } else if (guess < randomNumber) {
     displayMessage(`Too low! Try again!`);
